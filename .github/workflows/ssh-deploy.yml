@@ -1,0 +1,29 @@
+# .github/workflows/ssh-deploy.yml
+name: Deploy via SSH
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      
+    - name: Deploy to server
+      uses: appleboy/ssh-action@v0.1.7
+      with:
+        host: ${{ secrets.CPANEL_HOST }}
+        username: ${{ secrets.CPANEL_USERNAME }}
+        password: ${{ secrets.CPANEL_PASSWORD }}
+        # OR use key instead of password:
+        # key: ${{ secrets.CPANEL_SSH_KEY }}
+        script: |
+          cd public_html/crm-system
+          git pull origin main
+          # Add any build commands here if needed
+          # npm install && npm run build
+          echo "Deployment completed successfully"
