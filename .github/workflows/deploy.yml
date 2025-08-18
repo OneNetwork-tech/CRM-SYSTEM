@@ -1,11 +1,10 @@
 # .github/workflows/deploy.yml
-name: Deploy to cPanel
+name: Deploy OneNetwork CRM to cPanel
 
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch: # Allows manual trigger
 
 jobs:
   deploy:
@@ -13,32 +12,45 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       
-    - name: Setup Node.js (if needed for build process)
-      uses: actions/setup-node@v3
+    - name: Deploy to cPanel server
+      uses: appleboy/ssh-action@v1.0.3
       with:
-        node-version: '18'
-        
-    - name: Install dependencies (if you have package.json)
-      run: |
-        if [ -f package.json ]; then
-          npm install
-          npm run build
-        fi
-      
-    - name: Deploy to cPanel via FTP
-      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-      with:
-        server: ${{ secrets.CPANEL_FTP_SERVER }}
-        username: ${{ secrets.CPANEL_FTP_USERNAME }}
-        password: ${{ secrets.CPANEL_FTP_PASSWORD }}
-        local-dir: ./
-        server-dir: /public_html/crm-system/
-        exclude: |
-          **/.git*
-          **/.git*/**
-          **/node_modules/**
-          .github/
-          README.md
-          .gitignore
+        host: ${{ secrets.CPANEL_HOST }}
+        username: ${{ secrets.CPANEL_USERNAME }}
+        key: ${{ secrets.CPANEL_SSH_KEY }}
+        script: |
+          echo "🚀 Starting deployment for OneNetwork CRM..."
+          echo "🏠 Server: nl1-sr1.supercp.com"
+          echo "👤 User: onenetwo"
+          
+          # Navigate to project directory
+          cd /home/onenetwo/public_html/crm-system
+          echo "📁 Current directory: $(pwd)"
+          
+          # Show current git status
+          echo "📋 Current git status:"
+          git status
+          
+          # Pull latest changes
+          echo "📥 Pulling latest changes from GitHub..."
+          git pull origin main
+          
+          # Show what changed
+          echo "📝 Recent commits:"
+          git log --oneline -3
+          
+          # Set proper file permissions
+          echo "🔧 Setting file permissions..."
+          find . -type d -exec chmod 755 {} \;
+          find . -type f -exec chmod 644 {} \;
+          
+          # If you have specific writable directories, uncomment these:
+          # chmod -R 775 storage/ 2>/dev/null || true
+          # chmod -R 775 cache/ 2>/dev/null || true
+          # chmod -R 775 uploads/ 2>/dev/null || true
+          
+          echo "✅ Deployment completed successfully!"
+          echo "🌐 Your CRM system is live at: https://onenetwork.se/crm-system"
+          echo "⏰ Deployed at: $(date)"
