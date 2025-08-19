@@ -1,0 +1,6 @@
+# Always use LF in repo, convert CRLF on Windows checkout
+*.php text eol=lf
+*.css text eol=lf
+*.js  text eol=lf
+*.html text eol=lf
+*.sql text eol=lf
